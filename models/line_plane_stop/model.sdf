@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <sdf version='1.4'>
-  <model name='line_plane_v2'>
+  <model name='line_plane_stop'>
     <static>1</static>
       <link name='link'>
         <collision name='collision'>
@@ -29,7 +29,7 @@
           <cast_shadows>0</cast_shadows>
           <geometry>
             <mesh>
-            <uri>model://line_plane_v2/meshes/line_plane_v2.dae</uri>
+            <uri>model://line_plane_stop/meshes/line_plane_stop.dae</uri>
           </mesh>
           </geometry>          
         </visual>
