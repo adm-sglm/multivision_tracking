@@ -8,6 +8,8 @@ import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image
+from gazebo_msgs.msg import ModelState
+from gazebo_msgs.srv import GetModelState, DeleteModel, SpawnModel
 
 
 class LineFollower(object):
@@ -15,8 +17,13 @@ class LineFollower(object):
     def __init__(self):
     
         self.bridge_object = CvBridge()
-        self.image_sub = rospy.Subscriber("/camera/rgb/image_raw",Image,self.camera_callback)
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+        self.set_stage()
+        # self.image_sub = rospy.Subscriber("/camera/rgb/image_raw",Image,self.camera_callback)
+        # self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+
+    def set_stage(self):
+        delete_model_srv = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+        print(delete_model_srv(model_name="mobile_base"))
 
     def camera_callback(self,data):
         
