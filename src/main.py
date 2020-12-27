@@ -16,6 +16,7 @@ class LineFollower(object):
     
         self.bridge_object = CvBridge()
         self.image_sub = rospy.Subscriber("/camera/rgb/image_raw",Image,self.camera_callback)
+        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
     def camera_callback(self,data):
         
@@ -25,8 +26,43 @@ class LineFollower(object):
         except CvBridgeError as e:
             print(e)
 
-        cv2.imshow("Image window", cv_image)
+        cv2.imshow("Image window", self.process_image(cv_image))
         cv2.waitKey(1)
+
+    def process_image(self, cv_img):
+        height, width, channels = cv_img.shape
+        descentre = 160
+        rows_to_watch = 20
+        crop_img = cv_img[(height)/2+descentre:(height)/2+(descentre+rows_to_watch)][1:width]
+        hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+        lower_yellow = np.array([20,100,100])
+        upper_yellow = np.array([50,255,255])
+        mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        cx, cy = self.calculate_centroid(mask)        
+        res = cv2.bitwise_and(crop_img,crop_img, mask= mask)
+        cv2.circle(res,(int(cx), int(cy)), 10,(0,0,255),-1)
+        self.move_robot(cx, mask.shape[1])
+        return res
+
+    def calculate_centroid(self, mask):
+        m = cv2.moments(mask, False)
+        try:
+            cx, cy = m['m10']/m['m00'], m['m01']/m['m00']
+        except ZeroDivisionError:
+            cy, cx = mask.shape[0]/2, mask.shape[1]/2
+        return cx, cy
+
+    def move_robot(self, cx, width):
+        # we calculate the difference of the middle point of the blob and the image
+        difference_x = cx - width / 2
+        print(difference_x)
+        twist = Twist()
+        # we put a bit of a linear speed so it approaches to target point
+        twist.linear.x = 0.15
+        twist.angular.z = -difference_x / 100
+        print(twist)
+        self.cmd_vel_pub.publish(twist)
+        # twist.linear.
 
 
 def main():
