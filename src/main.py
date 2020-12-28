@@ -33,31 +33,41 @@ class LineFollower(object):
         except CvBridgeError as e:
             print(e)
 
-        cv2.imshow("original", cv_image)
-        cv2.imshow("Image window", self.process_image(cv_image))
-        # cv2.imshow("Image window", self.process_image(cv_image))
+        cv2.imshow("Original", cv_image)
+        self.process_image(cv_image)
         cv2.waitKey(1)
 
     def process_image(self, cv_img):
         height, width, channels = cv_img.shape
         descentre = 160
         rows_to_watch = 20
-        # crop_img = cv_img[(height)/2+descentre:(height)/2+(descentre+rows_to_watch)][1:width]
-        # hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
-        hsv = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)
-        lower_yellow = np.array([20,100,100])
-        upper_yellow = np.array([50,255,255])
+        crop_img = cv_img[(height)/2+descentre:(height)/2+(descentre+rows_to_watch)][1:width]
+        hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+        # for debugging if we want to work on full image
+        # hsv = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)
+        # higher and lower ranges of red in hsv color scheme
+        # for tracking the stop sign
         lower_red = np.array([0, 39, 65])
         high_red = np.array([20, 255, 255])
-        # mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
-        mask = cv2.inRange(hsv, lower_red, high_red)
-        cx, cy = self.calculate_centroid(mask)        
-        # res = cv2.bitwise_and(crop_img,crop_img, mask= mask)
-        res = cv2.bitwise_and(cv_img,cv_img, mask= mask)
-        cv2.circle(res,(int(cx), int(cy)), 10,(0,0,255),-1)        
-        # self.move_robot(cx, mask.shape[1])        
-        # return res
-        return mask
+        stop_mask  = cv2.inRange(hsv, lower_red, high_red)
+        # we check if we see the stop sign first so we dont continue with more processing and moving
+        if stop_mask.max() == 255:
+            cv2.imshow("Stop sign encountered", stop_mask)
+            return False
+        # to continue we mask the yellow band
+        # higher and lower ranges of yellow in hsv color scheme
+        # for tracking the yellow band
+        lower_yellow = np.array([20, 100, 100])
+        upper_yellow = np.array([50, 255, 255])
+
+        mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        cx, cy = self.calculate_centroid(mask)
+        # we replace unmasked pixels with their original colors for better visualization
+        res = cv2.bitwise_and(crop_img,crop_img, mask=mask)
+        cv2.circle(res,(int(cx), int(cy)), 10,(0,0,255),-1)
+        cv2.imshow("Centroid", res)
+        self.move_robot(cx, mask.shape[1])
+        return True
 
     def calculate_centroid(self, mask):
         m = cv2.moments(mask, False)
