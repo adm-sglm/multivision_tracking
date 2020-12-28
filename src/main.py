@@ -38,6 +38,7 @@ class LineFollower(object):
         cv2.waitKey(1)
 
     def process_image(self, cv_img):
+        cv_img = cv2.resize(cv_img, (640, 480))
         height, width, channels = cv_img.shape
         descentre = 160
         rows_to_watch = 20
@@ -53,6 +54,9 @@ class LineFollower(object):
         # we check if we see the stop sign first so we dont continue with more processing and moving
         if stop_mask.max() == 255:
             cv2.imshow("Stop sign encountered", stop_mask)
+            twist = Twist()
+            # we send an empty (zero by default) twist message to stop the robot
+            self.cmd_vel_pub.publish(twist)
             return False
         # to continue we mask the yellow band
         # higher and lower ranges of yellow in hsv color scheme
