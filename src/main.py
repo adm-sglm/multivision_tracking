@@ -17,9 +17,9 @@ class LineFollower(object):
     def __init__(self):
     
         self.bridge_object = CvBridge()
-        self.set_stage()
-        # self.image_sub = rospy.Subscriber("/camera/rgb/image_raw",Image,self.camera_callback)
-        # self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+        # self.set_stage()
+        self.image_sub = rospy.Subscriber("/camera/rgb/image_raw",Image,self.camera_callback)
+        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
     def set_stage(self):
         delete_model_srv = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
@@ -33,7 +33,7 @@ class LineFollower(object):
         except CvBridgeError as e:
             print(e)
 
-        cv2.imshow("Image window", self.process_image(cv_image))
+        cv2.imshow("Image window", cv_image)
         cv2.waitKey(1)
 
     def process_image(self, cv_img):
@@ -48,7 +48,7 @@ class LineFollower(object):
         cx, cy = self.calculate_centroid(mask)        
         res = cv2.bitwise_and(crop_img,crop_img, mask= mask)
         cv2.circle(res,(int(cx), int(cy)), 10,(0,0,255),-1)
-        self.move_robot(cx, mask.shape[1])
+        # self.move_robot(cx, mask.shape[1])
         return res
 
     def calculate_centroid(self, mask):

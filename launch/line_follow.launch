@@ -6,7 +6,12 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="verbose" default="true"/>
-  <env name="GAZEBO_MODEL_PATH" value="$(find my_following_line_package)"/>
+  <env name="GAZEBO_MODEL_PATH" value="$(find my_following_line_package)"/>  
+
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="x_pos" default="0.0"/>
+  <arg name="y_pos" default="0.0"/>
+  <arg name="z_pos" default="0.0"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find my_following_line_package)/worlds/follow_line.world"/>
@@ -17,6 +22,10 @@
     <arg name="headless" value="$(arg headless)"/>
     <arg name="verbose" value="$(arg verbose)"/>
   </include>
+
+  <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
 
 
 </launch>
