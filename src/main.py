@@ -33,7 +33,7 @@ class LineFollower(object):
         except CvBridgeError as e:
             print(e)
 
-        cv2.imshow("Image window", cv_image)
+        cv2.imshow("Image window", self.process_image(cv_image))
         cv2.waitKey(1)
 
     def process_image(self, cv_img):
@@ -47,8 +47,8 @@ class LineFollower(object):
         mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
         cx, cy = self.calculate_centroid(mask)        
         res = cv2.bitwise_and(crop_img,crop_img, mask= mask)
-        cv2.circle(res,(int(cx), int(cy)), 10,(0,0,255),-1)
-        # self.move_robot(cx, mask.shape[1])
+        cv2.circle(res,(int(cx), int(cy)), 10,(0,0,255),-1)        
+        self.move_robot(cx, mask.shape[1])
         return res
 
     def calculate_centroid(self, mask):

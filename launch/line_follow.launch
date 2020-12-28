@@ -5,7 +5,7 @@
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
-  <arg name="verbose" default="true"/>
+  <arg name="verbose" default="true"/>    
   <env name="GAZEBO_MODEL_PATH" value="$(find my_following_line_package)"/>  
 
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
